@@ -1,4 +1,4 @@
-local PID = require "PID"
+local PID = require "PID.PID"
 
 local PIDReactorSteamMode = {}
 
@@ -9,6 +9,8 @@ function PIDReactorSteamMode.new(reactorObject)
     self.reactor = reactorObject
 
     self.last_tick = os.clock()
+
+    return self
 end
 
 function doTick(self)
