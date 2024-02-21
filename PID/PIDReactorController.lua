@@ -1,48 +1,28 @@
-local PIDSteamReactor = {}
+local PID = require "PID"
 
-function PIDSteamReactor.new(reactor, pidController, targetHotFluidProduction)
-    local self = setmetatable({}, { __index = PIDSteamReactor })
+local PIDReactorSteamMode = {}
 
-    self.reactor = reactor
-    self.pid = pidController
+function PIDReactorSteamMode.new(reactorObject)
+    local self = setmetatable({}, { __index = PIDReactorSteamMode })
 
-    self.targetHotFluidProduction = targetHotFluidProduction or 2000
+    self.pid = PID.new(0.5, 0.1, 0.01)
+    self.reactor = reactorObject
 
-    self.maxControlRodLevel = 100
-    self.minControlRodLevel = 0
-
-    return self
+    self.last_tick = os.clock()
 end
 
-function PIDSteamReactor:setTargetHotFluidProduction(t)
-    self.targetHotFluidProduction = t
-end
-
-function PIDSteamReactor:controlReactor()
+function doTick(self)
     -- Activate reactor
-    self.reactor:setActive(true)
+    self.reactor.setActive(true)
 
-    local hotFluidLT = self.reactor.getHotFluidProducedLastTick()
-    local output = self.pid:calculateOutput(self.targetHotFluidProduction, hotFluidLT)
+    local ct = os.clock()
+    local dt = ct - self.last_tick
 
-    -- Adjust control rod level based on PID output
-    local currentControlRodLevel = self.reactor.getControlRodLevel(0) -- Adjust the index as needed
-    local newControlRodLevel = currentControlRodLevel + output
+    local hotFluidLastTick = self.reactor.getHotFluidProducedLastTick()
 
-    -- Ensure control rod level is within bounds
-    newControlRodLevel = math.max(self.minControlRodLevel, math.min(self.maxControlRodLevel, newControlRodLevel))
+    local power = 100 - self.pid:calc(10000, hotFluidLastTick, dt)
 
-    print("hotFluidLastTick: " .. tostring(hotFluidLT) .. " mb")
-    print("PID Output: " .. tostring(output))
-    print("Control Rod Level: " .. tostring(currentControlRodLevel) .. " -> " .. tostring(newControlRodLevel))
-
-    -- Set the new control rod level
-    self.reactor.setAllControlRodLevels(newControlRodLevel)
+    self.reactor.setAllControlRodLevels(power)
 end
 
-function PIDSteamReactor:__tostring()
-    return string.format("PID Steam Reactor: Target Hot Fluid Production=%d, %s", self.targetHotFluidProduction,
-        tostring(self.pid))
-end
-
-return PIDSteamReactor
+return PIDReactorSteamMode

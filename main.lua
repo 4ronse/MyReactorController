@@ -1,11 +1,9 @@
-local PID = require "PID.PID"
 local PIDReactorController = require "PID.PIDReactorController"
+local Reactor = peripheral.wrap("BigReactors-Reactor_3")
 
-local pid = PID.new(0.1, 0.01, 0.05)
-local reactor = peripheral.wrap("BigReactors-Reactor_3")
-local reactorController = PIDReactorController.new(reactor, pid, 10000)
+local ReactorController = PIDReactorController.new(Reactor)
 
-local function sleep(n --[[number]])
+local function sleep(n)
     local timer = os.startTimer(n)
     repeat
         local _, _timer = os.pullEvent("timer")
@@ -13,10 +11,6 @@ local function sleep(n --[[number]])
 end
 
 while true do
-    print(reactorController)
-    reactorController:controlReactor()
-    print()
-    print()
-
-    sleep(0.1)
+    ReactorController:doTick()
+    sleep(.2)
 end

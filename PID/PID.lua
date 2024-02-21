@@ -1,38 +1,53 @@
-local PIDController = {}
+local PID = {}
 
-function PIDController.new(kp, ki, kd)
-    local self = setmetatable({}, { __index = PIDController })
+function PID.new(Kp, Ki, Kd, bounds)
+    local self = setmetatable({}, { __index = PID })
 
-    self.kp = kp or 0
-    self.ki = ki or 0
-    self.kd = kd or 0
+    self.Kp = Kp
+    self.Ki = Ki
+    self.Kd = Kd
 
-    self.integral = 0
-    self.prevError = 0
+    self.integration = 0
+    self.last_error = 0
+
+    self.bounds = bounds or { 0, 100 }
 
     return self
 end
 
-function PIDController:setGains(kp, ki, kd)
-    self.kp = kp
-    self.ki = ki
-    self.kd = kd
+function PID.setGains(self, Kp, Ki, Kd)
+    self.Kp = Kp
+    self.Ki = Ki
+    self.Kd = Kd
 end
 
-function PIDController:calculateOutput(sp, pv)
-    local error = sp - pv
-    self.integral = self.integral + error
+function PID.clamp(self, v --[[Number]])
+    local lower = self.bounds[1] -- Change index from 0 to 1
+    local upper = self.bounds[2] -- Change index from 0 to 1
 
-    local derivative = error - self.prevError
-    local output = self.kp * error + self.ki * self.integral + self.kd * derivative
-
-    self.prevError = error
-
-    return output
+    if v < lower then
+        return lower
+    elseif v > upper then
+        return upper
+    else
+        return v
+    end
 end
 
-function PIDController:__tostring()
-    return string.format("PID Controller: kp=%.3f, ki=%.3f, kd=%.3f", self.kp, self.ki, self.kd)
+function PID.calc(self, target --[[number]], current --[[number]], dt --[[number]])
+    local error = target - current
+    self.integration = self.integration + error * dt
+    local derivative = 0
+
+    if dt ~= 0 then
+        derivative = (error - self.last_error) / dt
+    end
+
+    return self:clamp(
+        (self.Kp * error)
+        + (self.Ki * self.integration)
+        + (self.Kd * derivative)
+    )
 end
 
-return PIDController
+return PID
