@@ -13,7 +13,7 @@ function PIDReactorSteamMode.new(reactorObject)
     return self
 end
 
-function doTick(self)
+function PIDReactorSteamMode.doTick(self)
     -- Activate reactor
     self.reactor.setActive(true)
 
