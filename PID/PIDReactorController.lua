@@ -27,6 +27,7 @@ function PIDReactorSteamMode.doTick(self)
     print(string.format("CT: %f\nDT: %f\nHFLT: %f\nRODS: %d -> %d\n\n", ct, dt, hotFluidLastTick,
         self.reactor.getControlRodLevel(1), power))
 
+    self.last_tick = ct
     self.reactor.setAllControlRodLevels(power)
 end
 
