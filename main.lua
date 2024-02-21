@@ -12,5 +12,6 @@ end
 
 while true do
     ReactorController:doTick()
+
     sleep(.2)
 end

@@ -24,6 +24,9 @@ function PIDReactorSteamMode.doTick(self)
 
     local power = 100 - self.pid:calc(10000, hotFluidLastTick, dt)
 
+    print(string.format("CT: %f\nDT: %f\nHFLT: %f\nRODS: %d -> %d\n\n", ct, dt, hotFluidLastTick,
+        self.reactor.getControlRodLevel(1), power))
+
     self.reactor.setAllControlRodLevels(power)
 end
 
